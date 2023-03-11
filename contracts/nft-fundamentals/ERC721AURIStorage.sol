@@ -18,7 +18,7 @@ abstract contract ERC721AURIStorage is ERC721A {
     /**
      * @dev See ERC721A/tokenURI
      */
-    function tokenURI(uint256 _tokenId)  public view virtual override returns (string memory) {
+    function tokenURI(uint256 _tokenId) public view virtual override returns (string memory) {
         require(_exists(_tokenId), 'URIStorage: URI query for nonexistent token');
 
         string memory _tokenURI = _tokenURIs[_tokenId];

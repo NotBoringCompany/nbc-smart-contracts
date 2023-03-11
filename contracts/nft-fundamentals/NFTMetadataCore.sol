@@ -22,5 +22,5 @@ abstract contract NFTMetadataCore is ERC721AURIStorage {
     }
 
     // mapping from token ID to Metadata
-    mapping (uint256 => Metadata) private _nftMetadata;
+    mapping (uint256 => Metadata) internal _nftMetadata;
 }
