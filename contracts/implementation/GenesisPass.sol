@@ -5,8 +5,10 @@ pragma solidity ^0.8.18;
 import '../nft-fundamentals/NFTMetadataCore.sol';
 import '../security/AccessControl.sol';
 import '../security/Pausable.sol';
+import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 
 contract GenesisPass is NFTMetadataCore, AccessControl, Pausable {
+    using SafeERC20 for IERC20;
     constructor() ERC721A('Genesis Pass', 'KOS') {}
 
     /******EVENTS******** */
@@ -177,4 +179,24 @@ contract GenesisPass is NFTMetadataCore, AccessControl, Pausable {
 
         return _numMetadata;
     }
+    /********************************************* */
+
+    /********* WITHDRAWALS*************** */
+    /// withdraws balance from this contract to admin.
+    /// Note: Please do NOT send unnecessary funds to this contract.
+    /// This is used as a mechanism to transfer any balance that this contract has to admin.
+    /// we will NOT be responsible for any funds transferred accidentally unless notified immediately.
+    function withdrawFunds() external onlyAdmin {
+        payable(_msgSender()).transfer(address(this).balance);
+    }
+
+    /// withdraws tokens from this contract to admin.
+    /// Note: Please do NOT send unnecessary tokens to this contract.
+    /// This is used as a mechanism to transfer any tokens that this contract has to admin.
+    /// we will NOT be responsible for any tokens transferred accidentally unless notified immediately.
+    function withdrawTokens(address _tokenAddr, uint256 _amount) external onlyAdmin {
+        IERC20 _token = IERC20(_tokenAddr);
+        _token.transfer(_msgSender(), _amount);
+    }
+    /**************************************** */
 }
