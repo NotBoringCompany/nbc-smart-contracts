@@ -7,9 +7,11 @@ import '../security/AccessControl.sol';
 import '../security/Pausable.sol';
 import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 
-contract GenesisPass is NFTMetadataCore, AccessControl, Pausable {
+contract GenesisPassOld is NFTMetadataCore, AccessControl, Pausable {
     using SafeERC20 for IERC20;
-    constructor() ERC721A('Genesis Pass', 'KOS') {}
+    constructor() ERC721A('Keys Of Salvation', 'KOS') {
+        setBaseURI()
+    }
 
     /******EVENTS******** */
     event MintingAllowed(address _admin);
@@ -23,26 +25,68 @@ contract GenesisPass is NFTMetadataCore, AccessControl, Pausable {
     uint16 public constant MAX_SUPPLY = 5000;
     uint8 public constant EACH_MINT_LIMIT = 1;
     uint16 public constant DEV_MINT_LIMIT = 500;
-    bool public mintingAllowed;
+    bool public guaranteedMint = false;
+    bool public overallocatedMint = false;
+    bool public publicMint = false;
 
-    modifier whenMintingAllowed() {
-        require(mintingAllowed, 'GP1');
+    modifier whenGuaranteedMint() {
+        require(guaranteedMint, 'GP1');
         _;
     }
 
-    modifier whenMintingNotAllowed() {
-        require(!mintingAllowed, 'GP2');
+    modifier whenOverallocatedMint() {
+        require(overallocatedMint, 'GP2');
         _;
     }
 
-    function allowMinting() external whenMintingNotAllowed onlyAdmin {
-        mintingAllowed = true;
-        emit MintingAllowed(_msgSender());
+    modifier whenPublicMint() {
+        require(publicMint, 'GP3');
+        _;
     }
 
-    function disallowMinting() external whenMintingAllowed onlyAdmin {
-        mintingAllowed = false;
-        emit MintingNotAllowed(_msgSender());
+    modifier whenNotGuaranteedMint() {
+        require(!guaranteedMint, 'GP4');
+        _;
+    }
+
+    modifier whenNotOverallocatedMint() {
+        require(!overallocatedMint, 'GP5');
+        _;
+    }
+
+    modifier whenNotPublicMint() {
+        require(!publicMint, 'GP6');
+        _;
+    }
+
+    function allowGuaranteedMint() external whenNotGuaranteedMint onlyAdmin {
+        guaranteedMint = true;
+        emit GuaranteedMintAllowed(_msgSender());
+    }
+
+    function disallowGuaranteedMint() external whenGuaranteedMint onlyAdmin {
+        guaranteedMint = false;
+        emit GuaranteedMintNotAllowed(_msgSender());
+    }
+
+    function allowOverallocatedMint() external whenNotOverallocatedMint onlyAdmin {
+        overallocatedMint = true;
+        emit OverallocatedMintAllowed(_msgSender());
+    }
+
+    function disallowOverallocatedMint() external whenOverallocatedMint onlyAdmin {
+        overallocatedMint = false;
+        emit OverallocatedMintNotAllowed(_msgSender());
+    }
+
+    function allowPublicMint() external whenNotPublicMint onlyAdmin {
+        publicMint = true;
+        emit PublicMintAllowed(_msgSender());
+    }
+
+    function disallowPublicMint() external whenPublicMint onlyAdmin {
+        publicMint = false;
+        emit PublicMintNotAllowed(_msgSender());
     }
 
     /********WHITELISTED ADDRESS VARIABLES AND LOGIC******* */
@@ -137,7 +181,15 @@ contract GenesisPass is NFTMetadataCore, AccessControl, Pausable {
 
     /***********MINTING LOGIC*********************** */
     // for now, since we are not using chainlink, we will use block.timestamp to randomize the metadata.
-    function guaranteedMint() external hasNotMinted isGuaranteed isBelowSupplyLimit whenMintingAllowed {
+    function guaranteedMint() 
+        external 
+        hasNotMinted 
+        isGuaranteed 
+        isBelowSupplyLimit 
+        whenGuaranteedMint
+        whenNotOverallocatedMint
+        whenNotPublicMint
+    {
         uint256[] memory _numMetadata = generateLuck();
 
         WLMinter storage _minter = _wlProfile[_msgSender()];
@@ -147,7 +199,15 @@ contract GenesisPass is NFTMetadataCore, AccessControl, Pausable {
         _minter.hasMinted = true;
     }
 
-    function overallocatedMint() external hasNotMinted isOverallocated isBelowSupplyLimit whenMintingAllowed {
+    function overallocatedMint() 
+        external 
+        hasNotMinted 
+        isOverallocated 
+        isBelowSupplyLimit 
+        whenOverallocatedMint 
+        whenNotGuaranteedMint 
+        whenNotPublicMint 
+    {
         uint256[] memory _numMetadata = generateLuck();
 
         WLMinter storage _minter = _wlProfile[_msgSender()];
