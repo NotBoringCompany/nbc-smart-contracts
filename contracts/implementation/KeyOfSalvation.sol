@@ -13,6 +13,7 @@ import '@openzeppelin/contracts/utils/cryptography/MerkleProof.sol';
 import 'operator-filter-registry/src/OperatorFilterer.sol';
 import '@openzeppelin/contracts/utils/Address.sol';
 import '@openzeppelin/contracts/utils/cryptography/ECDSA.sol';
+import '@openzeppelin/contracts/interfaces/IERC20.sol';
 
 
 /**
@@ -32,8 +33,6 @@ contract KeyOfSalvation is ERC721AExtended, AccessControl, ERC2981, Ownable, Ope
     error DevMintLimitReached();
     // called when royalty specified is zero
     error RoyaltyIsZero();
-    // called when address specified is the zero address
-    error IsZeroAddress();
     // called when address specified is not whitelisted
     error NotWhitelisted();
     // called when address specified has already minted
@@ -42,8 +41,18 @@ contract KeyOfSalvation is ERC721AExtended, AccessControl, ERC2981, Ownable, Ope
     error InvalidMerkleType();
     // called when guaranteed mint is not allowed
     error NotGuaranteedMint();
+    // called when guaranteed mint is already running
+    error GuaranteedMintAlready();
+    // called when overallocated mint is already running
+    error OverallocatedMintAlready();
+    // guaranteed mint must be off when overallocated is on.
+    error GuaranteedMintMustBeOff();
+    // overallocated mint must be off when guaranteed is on.
+    error OverAllocatedMintMustBeOff();
     // called when overallocated mint is not allowed
     error NotOverallocatedMint();
+    // transferring ownership to zero address
+    error TransferOwnershipToZeroAddress();
 
     /**
      * @dev Key variables for the Key.
@@ -52,8 +61,8 @@ contract KeyOfSalvation is ERC721AExtended, AccessControl, ERC2981, Ownable, Ope
     uint16 public constant MAX_SUPPLY = 5000;
     // max supply a dev can mint
     uint16 public constant DEV_MINT_LIMIT = 500;
-    // check is an address has already claimed the whitelist (guaranteed or whitelisted)
-    mapping (address => bool) public whitelistClaimed;
+    // check if an address has already minted (guaranteed or overallocated)
+    mapping (address => uint256) public whitelistMinted;
     // if guaranteed mint is on
     bool public isGuaranteedMint;
     // if overallocated mint is on
@@ -61,6 +70,46 @@ contract KeyOfSalvation is ERC721AExtended, AccessControl, ERC2981, Ownable, Ope
 
     constructor() ERC721A('Key Of Salvation', 'KOS') OperatorFilterer(0x0000000000000000000000000000000000000000, false) {
         _grantRole(DEFAULT_ADMIN_ROLE, _msgSender());
+    }
+
+    // starts guaranteed mint
+    function startGuaranteedMint() external onlyOwner {
+        if (isGuaranteedMint) {
+            revert GuaranteedMintAlready();
+        }
+
+        if (isOverAllocatedMint) {
+            revert OverAllocatedMintMustBeOff();
+        }
+        isGuaranteedMint = true;
+    }
+
+    // starts overallocated mint
+    function startOverallocatedMint() external onlyOwner {
+        if (isOverAllocatedMint) {
+            revert OverallocatedMintAlready();
+        }
+
+        if (isGuaranteedMint) {
+            revert GuaranteedMintMustBeOff();
+        }
+        isOverAllocatedMint = true;
+    }
+
+    function stopGuaranteedMint() external onlyOwner {
+        if (!isGuaranteedMint) {
+            revert NotGuaranteedMint();
+        }
+
+        isGuaranteedMint = false;
+    }
+
+    function stopOverallocatedMint() external onlyOwner {
+        if (!isOverAllocatedMint) {
+            revert NotOverallocatedMint();
+        }
+
+        isOverAllocatedMint = false;
     }
 
     // mints a key to a guaranteed WL holder.
@@ -75,11 +124,11 @@ contract KeyOfSalvation is ERC721AExtended, AccessControl, ERC2981, Ownable, Ope
         }
 
         // checks if address has already minted
-        if (whitelistClaimed[_msgSender()]) {
+        if (whitelistMinted[_msgSender()] > 0) {
             revert AlreadyMinted();
         }
 
-        whitelistClaimed[_msgSender()] = true;
+        whitelistMinted[_msgSender()] = nextTokenId();
         _safeMint(false, _msgSender(), 1);
     }
 
@@ -95,11 +144,11 @@ contract KeyOfSalvation is ERC721AExtended, AccessControl, ERC2981, Ownable, Ope
         }
 
         // checks if address has already minted
-        if (whitelistClaimed[_msgSender()]) {
+        if (whitelistMinted[_msgSender()] > 0) {
             revert AlreadyMinted();
         }
 
-        whitelistClaimed[_msgSender()] = true;
+        whitelistMinted[_msgSender()] = nextTokenId();
         _safeMint(false, _msgSender(), 1);
     }
 
@@ -143,11 +192,11 @@ contract KeyOfSalvation is ERC721AExtended, AccessControl, ERC2981, Ownable, Ope
 
     // checks if an address is whitelisted for either guaranteed or overallocated
     function _isWhitelisted(uint8 _type, address _addr, bytes32[] calldata _proof) internal view returns (bool) {
-        return _verify(_type, _leaf(_addr), _proof);
+        return _verify(_type, _getLeaf(_addr), _proof);
     }
 
     // gets the leaf (i.e. the hashed output of the address)
-    function _leaf(address _addr) internal pure returns (bytes32) {
+    function _getLeaf(address _addr) internal pure returns (bytes32) {
         return keccak256(abi.encodePacked(_addr));
     }
 
@@ -162,7 +211,90 @@ contract KeyOfSalvation is ERC721AExtended, AccessControl, ERC2981, Ownable, Ope
         }
     }
 
+    /// TOKEN URI FUNCTIONS
+    string private _baseURI_;
+    string private _contractURI;
+
+    function tokenURI(uint256 _tokenId) public view virtual override(ERC721A, IERC721A) returns (string memory) {
+        if (!_exists(_tokenId)) {
+            revert URIQueryForNonexistentToken();
+        }
+
+        string memory baseURI_ = _baseURI();
+        return bytes(baseURI_).length > 0 ? string(abi.encodePacked(baseURI_, _tokenId.toString(), '.json')) : '';
+    }
+
+    function _baseURI() internal view override returns (string memory) {
+        return _baseURI_;
+    }
+
+    function baseURI() public view returns (string memory) {
+        return _baseURI();
+    }
+
+    function setBaseURI(string memory baseURI_) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        _baseURI_ = baseURI_;
+    }
+
+    // contract URI for opensea
+    function contractURI() public view returns (string memory) {
+        return _contractURI;
+    }
+
+    function setContractURI(string calldata contractURI_) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        _contractURI = contractURI_;
+    }
+    /// End of TOKEN URI FUNCTIONS
+
+    function setDefaultRoyalty(address _receiver, uint96 _feeNumerator) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        _setDefaultRoyalty(_receiver, _feeNumerator);
+    }
+
+    function setApprovalForAll(address _operator, bool _approved) public override(ERC721A, IERC721A) onlyAllowedOperatorApproval(_operator) {
+        super.setApprovalForAll(_operator, _approved);
+    }
+
+    function approve(address _operator, uint256 _tokenId) public payable override(ERC721A, IERC721A) onlyAllowedOperatorApproval(_operator) {
+        super.approve(_operator, _tokenId);
+    }
+
+    function transferFrom(address _from, address _to, uint256 _tokenId) public payable override(ERC721A, IERC721A) onlyAllowedOperator(_from) {
+        super.transferFrom(_from, _to, _tokenId);
+    }
+
+    function safeTransferFrom(address _from, address _to, uint256 _tokenId) public payable override(ERC721A, IERC721A) onlyAllowedOperator(_from) {
+        super.safeTransferFrom(_from, _to, _tokenId);
+    }
+
+    function safeTransferFrom(address _from, address _to, uint256 _tokenId, bytes memory _data) public payable override(ERC721A, IERC721A) onlyAllowedOperator(_from) {
+        super.safeTransferFrom(_from, _to, _tokenId, _data);
+    }
+
+     /********* WITHDRAWALS*************** */
+    /// withdraws balance from this contract to admin.
+    /// Note: Please do NOT send unnecessary funds to this contract.
+    /// This is used as a mechanism to transfer any balance that this contract has to admin.
+    /// we will NOT be responsible for any funds transferred accidentally unless notified immediately.
+    function withdrawFunds() external onlyRole(DEFAULT_ADMIN_ROLE) {
+        payable(_msgSender()).transfer(address(this).balance);
+    }
+
+    /// withdraws tokens from this contract to admin.
+    /// Note: Please do NOT send unnecessary tokens to this contract.
+    /// This is used as a mechanism to transfer any tokens that this contract has to admin.
+    /// we will NOT be responsible for any tokens transferred accidentally unless notified immediately.
+    function withdrawTokens(address _tokenAddr, uint256 _amount) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        IERC20 _token = IERC20(_tokenAddr);
+        _token.transfer(_msgSender(), _amount);
+    }
+    /**************************************** */
+
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721A, IERC721A, AccessControl, ERC2981) returns (bool) {
-        return super.supportsInterface(interfaceId);
+        return 
+            interfaceId == type(IAccessControl).interfaceId ||
+            interfaceId == type(IERC721A).interfaceId ||
+            interfaceId == type(IERC2981).interfaceId ||
+            interfaceId == type(IERC165).interfaceId ||
+            super.supportsInterface(interfaceId);
     }
 }
