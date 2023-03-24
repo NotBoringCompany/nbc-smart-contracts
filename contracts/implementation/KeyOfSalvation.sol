@@ -53,6 +53,8 @@ contract KeyOfSalvation is ERC721AExtended, AccessControl, ERC2981, Ownable, Ope
     error NotOverallocatedMint();
     // transferring ownership to zero address
     error TransferOwnershipToZeroAddress();
+    // when mint is already closed, cannot change mint status
+    error MintAlreadyClosed();
 
     /**
      * @dev Key variables for the Key.
@@ -63,58 +65,37 @@ contract KeyOfSalvation is ERC721AExtended, AccessControl, ERC2981, Ownable, Ope
     uint16 public constant DEV_MINT_LIMIT = 500;
     // check if an address has already minted (guaranteed or overallocated)
     mapping (address => uint256) public whitelistMinted;
-    // if guaranteed mint is on
-    bool public isGuaranteedMint;
-    // if overallocated mint is on
-    bool public isOverAllocatedMint;
+    MintStatus public mintStatus;
+    // the current status of mint
+    enum MintStatus {
+        NOT_STARTED,
+        GUARANTEED,
+        OVERALLOCATED,
+        CLOSED
+    }
 
-    constructor() ERC721A('Key Of Salvation', 'KOS') OperatorFilterer(0x0000000000000000000000000000000000000000, false) {
+    constructor(
+        uint96 defaultRoyalty_,
+        string memory baseURI_,
+        string memory contractURI_
+    ) ERC721A('Key Of Salvation', 'KOS') OperatorFilterer(0x0000000000000000000000000000000000000000, false) {
         _grantRole(DEFAULT_ADMIN_ROLE, _msgSender());
+        _setDefaultRoyalty(_msgSender(), defaultRoyalty_);
+        _baseURI_ = baseURI_;
+        _contractURI = contractURI_;
     }
 
-    // starts guaranteed mint
-    function startGuaranteedMint() external onlyOwner {
-        if (isGuaranteedMint) {
-            revert GuaranteedMintAlready();
+    // changes the mint status
+    function setMintStatus(MintStatus _status) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        if (mintStatus == MintStatus.CLOSED) {
+            revert MintAlreadyClosed();
         }
-
-        if (isOverAllocatedMint) {
-            revert OverAllocatedMintMustBeOff();
-        }
-        isGuaranteedMint = true;
-    }
-
-    // starts overallocated mint
-    function startOverallocatedMint() external onlyOwner {
-        if (isOverAllocatedMint) {
-            revert OverallocatedMintAlready();
-        }
-
-        if (isGuaranteedMint) {
-            revert GuaranteedMintMustBeOff();
-        }
-        isOverAllocatedMint = true;
-    }
-
-    function stopGuaranteedMint() external onlyOwner {
-        if (!isGuaranteedMint) {
-            revert NotGuaranteedMint();
-        }
-
-        isGuaranteedMint = false;
-    }
-
-    function stopOverallocatedMint() external onlyOwner {
-        if (!isOverAllocatedMint) {
-            revert NotOverallocatedMint();
-        }
-
-        isOverAllocatedMint = false;
+        mintStatus = _status;
     }
 
     // mints a key to a guaranteed WL holder.
     function guaranteedMint(bytes32[] calldata _proof) external {
-        if (!isGuaranteedMint) {
+        if (mintStatus != MintStatus.GUARANTEED) {
             revert NotGuaranteedMint();
         }
 
@@ -134,7 +115,7 @@ contract KeyOfSalvation is ERC721AExtended, AccessControl, ERC2981, Ownable, Ope
 
     // mints a key to an overallocated WL holder.
     function overallocatedMint(bytes32[] calldata _proof) external {
-        if (!isOverAllocatedMint) {
+        if (mintStatus != MintStatus.OVERALLOCATED) {
             revert NotOverallocatedMint();
         }
 
