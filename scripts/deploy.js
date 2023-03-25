@@ -9,7 +9,9 @@ async function main() {
 
   // Key Of Salvation contract
   const KeyOfSalvation = await ethers.getContractFactory('KeyOfSalvation');
-  const keyOfSalvation = await KeyOfSalvation.deploy(500, '', '');
+  const keyOfSalvation = await KeyOfSalvation.deploy(1000);
+
+  console.log('Polygon Mumbai APIKEY:', process.env.POLYGONSCAN_API_KEY,)
 
   await keyOfSalvation.deployed();
   console.log('KeyOfSalvation address: ', keyOfSalvation.address);
@@ -21,7 +23,7 @@ async function main() {
 
   await run(`verify:verify`, {
     address: keyOfSalvation.address,
-    constructorArguments: [500, '', ''],
+    constructorArguments: [1000],
   });
 }
 

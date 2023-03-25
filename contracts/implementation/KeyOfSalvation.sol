@@ -33,8 +33,10 @@ contract KeyOfSalvation is ERC721AExtended, AccessControl, ERC2981, Ownable, Ope
     error DevMintLimitReached();
     // called when royalty specified is zero
     error RoyaltyIsZero();
-    // called when address specified is not whitelisted
-    error NotWhitelisted();
+    // called when address specified is not whitelisted for guaranteed
+    error NotWhitelistedForGuaranteed();
+    // called when address specified is not whitelisted for overallocated
+    error NotWhitelistedForOverallocated();
     // called when address specified has already minted
     error AlreadyMinted();
     // two merkle types: guaranteed and overallocated root
@@ -55,6 +57,8 @@ contract KeyOfSalvation is ERC721AExtended, AccessControl, ERC2981, Ownable, Ope
     error TransferOwnershipToZeroAddress();
     // when mint is already closed, cannot change mint status
     error MintAlreadyClosed();
+    // called when reveal stage is invalid
+    error InvalidRevealStage();
 
     /**
      * @dev Key variables for the Key.
@@ -73,16 +77,34 @@ contract KeyOfSalvation is ERC721AExtended, AccessControl, ERC2981, Ownable, Ope
         OVERALLOCATED,
         CLOSED
     }
+    // starts at STAGE_1.
+    RevealStage public revealStage = RevealStage.STAGE_1;
+    // reveal stages
+    enum RevealStage {
+        // not revealed
+        STAGE_1,
+        // revealed the key type and house
+        STAGE_2,
+        // revealed the luck trait
+        STAGE_3
+    }
 
-    constructor(
-        uint96 defaultRoyalty_,
-        string memory baseURI_,
-        string memory contractURI_
-    ) ERC721A('Key Of Salvation', 'KOS') OperatorFilterer(0x0000000000000000000000000000000000000000, false) {
+    constructor(uint96 defaultRoyalty_) ERC721A('Key Of Salvation', 'KOS') OperatorFilterer(0x0000000000000000000000000000000000000000, false) {
         _grantRole(DEFAULT_ADMIN_ROLE, _msgSender());
         _setDefaultRoyalty(_msgSender(), defaultRoyalty_);
-        _baseURI_ = baseURI_;
-        _contractURI = contractURI_;
+    }
+
+    // changes start token from 0 to 1.
+    function _startTokenId() internal view virtual override returns (uint256) {
+        return 1;
+    }
+
+    // sets the reveal stage of the key.
+    function setRevealStage(RevealStage _stage) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        if (_stage != RevealStage.STAGE_2 || _stage != RevealStage.STAGE_3) {
+            revert InvalidRevealStage();
+        } 
+        revealStage = _stage;
     }
 
     // changes the mint status
@@ -101,7 +123,7 @@ contract KeyOfSalvation is ERC721AExtended, AccessControl, ERC2981, Ownable, Ope
 
         // checks if the address is whitelisted for guaranteed
         if (!_isWhitelisted(1, _msgSender(), _proof)) {
-            revert NotWhitelisted();
+            revert NotWhitelistedForGuaranteed();
         }
 
         // checks if address has already minted
@@ -121,7 +143,7 @@ contract KeyOfSalvation is ERC721AExtended, AccessControl, ERC2981, Ownable, Ope
 
         // checks if the address is whitelisted for OA
         if (!_isWhitelisted(2, _msgSender(), _proof)) {
-            revert NotWhitelisted();
+            revert NotWhitelistedForOverallocated();
         }
 
         // checks if address has already minted
@@ -193,8 +215,10 @@ contract KeyOfSalvation is ERC721AExtended, AccessControl, ERC2981, Ownable, Ope
     }
 
     /// TOKEN URI FUNCTIONS
-    string private _baseURI_;
     string private _contractURI;
+    string private _stage1RevealURI;
+    string private _stage2RevealURI;
+    string private _stage3RevealURI;
 
     function tokenURI(uint256 _tokenId) public view virtual override(ERC721A, IERC721A) returns (string memory) {
         if (!_exists(_tokenId)) {
@@ -206,15 +230,29 @@ contract KeyOfSalvation is ERC721AExtended, AccessControl, ERC2981, Ownable, Ope
     }
 
     function _baseURI() internal view override returns (string memory) {
-        return _baseURI_;
+        if (revealStage == RevealStage.STAGE_1) {
+            return _stage1RevealURI;
+        } else if (revealStage == RevealStage.STAGE_2) {
+            return _stage2RevealURI;
+        } else {
+            return _stage3RevealURI;
+        }
     }
 
     function baseURI() public view returns (string memory) {
         return _baseURI();
     }
 
-    function setBaseURI(string memory baseURI_) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        _baseURI_ = baseURI_;
+    function setBaseURI(uint8 _type, string memory _uri) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        if (_type == 1) {
+            _stage1RevealURI = _uri;
+        } else if (_type == 2) {
+            _stage2RevealURI = _uri;
+        } else if (_type == 3) {
+            _stage3RevealURI = _uri;
+        } else {
+            revert InvalidRevealStage();
+        }
     }
 
     // contract URI for opensea
