@@ -15,7 +15,6 @@ import '@openzeppelin/contracts/utils/Address.sol';
 import '@openzeppelin/contracts/utils/cryptography/ECDSA.sol';
 import '@openzeppelin/contracts/interfaces/IERC20.sol';
 
-
 /**
  * @dev Key of Salvation (aka Genesis Pass) contract.
  */
@@ -43,6 +42,8 @@ contract KeyOfSalvation is ERC721AExtended, AccessControl, ERC2981, Ownable, Ope
     error InvalidMerkleType();
     // called when guaranteed mint is not allowed
     error NotGuaranteedMint();
+    // called when overallocated mint is not allowed
+    error NotOverallocatedMint();
     // called when guaranteed mint is already running
     error GuaranteedMintAlready();
     // called when overallocated mint is already running
@@ -51,8 +52,6 @@ contract KeyOfSalvation is ERC721AExtended, AccessControl, ERC2981, Ownable, Ope
     error GuaranteedMintMustBeOff();
     // overallocated mint must be off when guaranteed is on.
     error OverAllocatedMintMustBeOff();
-    // called when overallocated mint is not allowed
-    error NotOverallocatedMint();
     // transferring ownership to zero address
     error TransferOwnershipToZeroAddress();
     // when mint is already closed, cannot change mint status
@@ -69,16 +68,13 @@ contract KeyOfSalvation is ERC721AExtended, AccessControl, ERC2981, Ownable, Ope
     uint16 public constant DEV_MINT_LIMIT = 500;
     // check if an address has already minted (guaranteed or overallocated)
     mapping (address => uint256) public whitelistMinted;
-    MintStatus public mintStatus;
-    // the current status of mint
-    enum MintStatus {
-        NOT_STARTED,
-        GUARANTEED,
-        OVERALLOCATED,
-        CLOSED
-    }
+    // guaranteed mint timestamp
+    uint256 public guaranteedMintTimestamp;
+    // overallocated mint timestamp
+    uint256 public overallocatedMintTimestamp;
+
     // starts at STAGE_1.
-    RevealStage public revealStage = RevealStage.STAGE_1;
+    RevealStage public revealStage;
     // reveal stages
     enum RevealStage {
         // not revealed
@@ -92,6 +88,19 @@ contract KeyOfSalvation is ERC721AExtended, AccessControl, ERC2981, Ownable, Ope
     constructor(uint96 defaultRoyalty_) ERC721A('Key Of Salvation', 'KOS') OperatorFilterer(0x0000000000000000000000000000000000000000, false) {
         _grantRole(DEFAULT_ADMIN_ROLE, _msgSender());
         _setDefaultRoyalty(_msgSender(), defaultRoyalty_);
+        revealStage = RevealStage.STAGE_1;
+        guaranteedMintTimestamp = 1680536400;
+        overallocatedMintTimestamp = 1680537000;
+    }
+
+    // changes the guaranteed mint timestamp.
+    function changeGuaranteedMintTimestamp(uint256 _timestamp) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        guaranteedMintTimestamp = _timestamp;
+    }
+
+    // changes the overallocated mint timestamp.
+    function changeOverallocatedMintTimestamp(uint256 _timestamp) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        overallocatedMintTimestamp = _timestamp;
     }
 
     // changes start token from 0 to 1.
@@ -101,23 +110,12 @@ contract KeyOfSalvation is ERC721AExtended, AccessControl, ERC2981, Ownable, Ope
 
     // sets the reveal stage of the key.
     function setRevealStage(RevealStage _stage) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        if (_stage != RevealStage.STAGE_2 || _stage != RevealStage.STAGE_3) {
-            revert InvalidRevealStage();
-        } 
         revealStage = _stage;
-    }
-
-    // changes the mint status
-    function setMintStatus(MintStatus _status) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        if (mintStatus == MintStatus.CLOSED) {
-            revert MintAlreadyClosed();
-        }
-        mintStatus = _status;
     }
 
     // mints a key to a guaranteed WL holder.
     function guaranteedMint(bytes32[] calldata _proof) external {
-        if (mintStatus != MintStatus.GUARANTEED) {
+        if (block.timestamp < guaranteedMintTimestamp) {
             revert NotGuaranteedMint();
         }
 
@@ -137,7 +135,7 @@ contract KeyOfSalvation is ERC721AExtended, AccessControl, ERC2981, Ownable, Ope
 
     // mints a key to an overallocated WL holder.
     function overallocatedMint(bytes32[] calldata _proof) external {
-        if (mintStatus != MintStatus.OVERALLOCATED) {
+        if (block.timestamp < overallocatedMintTimestamp) {
             revert NotOverallocatedMint();
         }
 
@@ -226,6 +224,11 @@ contract KeyOfSalvation is ERC721AExtended, AccessControl, ERC2981, Ownable, Ope
         }
 
         string memory baseURI_ = _baseURI();
+
+        if (revealStage == RevealStage.STAGE_1) {
+            return _stage1RevealURI;
+        }
+
         return bytes(baseURI_).length > 0 ? string(abi.encodePacked(baseURI_, _tokenId.toString(), '.json')) : '';
     }
 
@@ -293,7 +296,7 @@ contract KeyOfSalvation is ERC721AExtended, AccessControl, ERC2981, Ownable, Ope
     /// withdraws balance from this contract to admin.
     /// Note: Please do NOT send unnecessary funds to this contract.
     /// This is used as a mechanism to transfer any balance that this contract has to admin.
-    /// we will NOT be responsible for any funds transferred accidentally unless notified immediately.
+    /// we will NOT be responsible for any funds transferred accidentally.
     function withdrawFunds() external onlyRole(DEFAULT_ADMIN_ROLE) {
         payable(_msgSender()).transfer(address(this).balance);
     }
@@ -301,7 +304,7 @@ contract KeyOfSalvation is ERC721AExtended, AccessControl, ERC2981, Ownable, Ope
     /// withdraws tokens from this contract to admin.
     /// Note: Please do NOT send unnecessary tokens to this contract.
     /// This is used as a mechanism to transfer any tokens that this contract has to admin.
-    /// we will NOT be responsible for any tokens transferred accidentally unless notified immediately.
+    /// we will NOT be responsible for any tokens transferred accidentally.
     function withdrawTokens(address _tokenAddr, uint256 _amount) external onlyRole(DEFAULT_ADMIN_ROLE) {
         IERC20 _token = IERC20(_tokenAddr);
         _token.transfer(_msgSender(), _amount);

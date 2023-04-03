@@ -1,4 +1,4 @@
-const { ethers } = require('hardhat');
+const { ethers, artifacts } = require('hardhat');
 const { MerkleTree } = require('merkletreejs');
 const keccak256 = require('keccak256');
 const { guaranteedMerkleTree } = require('../src/testWhitelisting');
@@ -8,11 +8,11 @@ const path = require('path');
 const parseJSON = (data) => JSON.parse(JSON.stringify(data));
 
 async function main() {
-    // const kosAddress = '0x1a921715AC693532f9c9c682dc9428b746fdAaeE';
-    // const KOSContract = await ethers.getContractFactory('KeyOfSalvation');
-    // const kos = await KOSContract.attach(kosAddress);
+    const kosAddress = '0xa8a7a9f5997aa2cC555A7aE2654fA6522F350546';
+    const KOSContract = await ethers.getContractFactory('KeyOfSalvation');
+    const kos = await KOSContract.attach(kosAddress);
 
-    // const [deployer] = await ethers.getSigners();
+    const [deployer] = await ethers.getSigners();
 
     const rpcURL = new ethers.providers.JsonRpcProvider(`https://polygon-mumbai.g.alchemy.com/v2/${process.env.ALCHEMY_MUMBAI_API_KEY}`);
 
@@ -23,7 +23,7 @@ async function main() {
     );
 
     const kosContract = new ethers.Contract(
-      '0x1a921715AC693532f9c9c682dc9428b746fdAaeE',
+      '0xa8a7a9f5997aa2cC555A7aE2654fA6522F350546',
       abi,
       rpcURL,
     );
@@ -31,23 +31,37 @@ async function main() {
     // const allowGuaranteedMint = await kos.setMintStatus(1);
     // console.log('allowGuaranteedMint: ', allowGuaranteedMint);
 
-    // const tryGuaranteedMint = await kos.guaranteedMint(
-    //   guaranteedMerkleTree.getHexProof(keccak256('0x2175cF248625c4cBefb204E76f0145b47d9061F8')),
-    // );
+    // const hexProof = guaranteedMerkleTree.getHexProof(keccak256('0x213DB2BFCd51fCbC7503755784C72F09'));
+    // console.log('hexProof: ', hexProof);
 
-    // console.log('tryGuaranteedMint: ', tryGuaranteedMint);
+    // const devMint = await kos.devMint(1);
+    // console.log('devMint: ', devMint);
 
-    const trf = await kosContract['safeTransferFrom(address, address, uint256)']('0x213D2806B07fB2BFCd51fCbC7503755784C72F09', '0xe253773Fdd10B4Bd9d7567e37003F7029144EF90', 1);
-    console.log('trf: ', trf);
+    // const changeGuaranteedTimestamp = await kos.changeGuaranteedMintTimestamp(1680537300);
+    // console.log('changeGuaranteedTimestamp: ', changeGuaranteedTimestamp);
+
+    // const changeOverallocatedTimestamp = await kos.changeOverallocatedMintTimestamp(1680537900);
+    // console.log('changeOverallocatedTimestamp: ', changeOverallocatedTimestamp);
+
+    const tryGuaranteedMint = await kos.guaranteedMint(
+      guaranteedMerkleTree.getHexProof(keccak256('0x2175cF248625c4cBefb204E76f0145b47d9061F8')),
+    );
+    console.log('tryGuaranteedMint: ', tryGuaranteedMint);
+
+    // const trf = await kosContract.connect(deployer)['safeTransferFrom(address,address,uint256)'](deployer.address, '0x2175cF248625c4cBefb204E76f0145b47d9061F8', 1);
+    // console.log('trf: ', trf);
 
     // const changeContractURI = await kos.setContractURI('https://silver-odd-bee-580.mypinata.cloud/ipfs/bafybeifr5nfj5sm25itd5mkxjsrgwcevy6rziw5ek6fhv5ov66cxadn5o4/kos.json');
     // console.log('changeContractURI: ', changeContractURI);
 
-    // const setBaseURI = await kos.setBaseURI(1, 'https://silver-odd-bee-580.mypinata.cloud/ipfs/bafybeifr5nfj5sm25itd5mkxjsrgwcevy6rziw5ek6fhv5ov66cxadn5o4/');
+    // const changeStage = await kosContract.connect(deployer)['setRevealStage(uint8)'](2);
+    // console.log('changeStage: ', changeStage);
+
+    // const setBaseURI = await kosContract.connect(deployer).setBaseURI(1, 'https://silver-odd-bee-580.mypinata.cloud/ipfs/bafybeiakr662765sqiqocsjdzlfffamvu2dgexq4rnss4zwdqohpyd276m/metadata.json');
     // console.log('setBaseURI: ', setBaseURI);
 
     // // change guaranteed merkle tree root hash to the wl addresses in `testWhitelisting`
-    // const changeGuaranteedRoot = await kos.setMerkleRoot(1, '0x02b84df9abb879d43dd869ced2fb5cc0fac806a8e1191fa5391850614527821e');
+    // const changeGuaranteedRoot = await kos.setMerkleRoot(1, '0xf4e63e77429fb1dd2f25b589799fd147ecca1a128d1e60b4d868d91289ffe427');
     // console.log('changeGuaranteedRoot: ', changeGuaranteedRoot);
 
     // // change overallocated merkle tree root hash to the wl addresses in `testWhitelisting`

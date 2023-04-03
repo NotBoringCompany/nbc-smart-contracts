@@ -24,6 +24,16 @@ module.exports = {
         `0x${deployerAccount}`
       ]
     },
+    polygon: {
+      url: `https://polygon-mainnet.g.alchemy.com/v2/${process.env.POLYGON_ALCHEMY_API_KEY}`,
+      chainId: 137,
+      gasPrice: 100000000000,
+      accounts: [
+        // `0x${account2Wallet}`,
+        `0x${testWallet}`,
+        // `0x${deployerAccount}`
+      ]
+    },
     mumbai: {
       url: `https://polygon-mumbai.g.alchemy.com/v2/${process.env.ALCHEMY_MUMBAI_API_KEY}`,
       chainId: 80001,

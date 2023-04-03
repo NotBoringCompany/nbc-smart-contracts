@@ -11,8 +11,6 @@ async function main() {
   const KeyOfSalvation = await ethers.getContractFactory('KeyOfSalvation');
   const keyOfSalvation = await KeyOfSalvation.deploy(1000);
 
-  console.log('Polygon Mumbai APIKEY:', process.env.POLYGONSCAN_API_KEY,)
-
   await keyOfSalvation.deployed();
   console.log('KeyOfSalvation address: ', keyOfSalvation.address);
 
