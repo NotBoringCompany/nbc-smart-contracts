@@ -9,7 +9,7 @@ async function main() {
 
   // Key Of Salvation contract
   const KeyOfSalvation = await ethers.getContractFactory('KeyOfSalvation');
-  const keyOfSalvation = await KeyOfSalvation.deploy(1000);
+  const keyOfSalvation = await KeyOfSalvation.deploy();
 
   await keyOfSalvation.deployed();
   console.log('KeyOfSalvation address: ', keyOfSalvation.address);
@@ -21,7 +21,7 @@ async function main() {
 
   await run(`verify:verify`, {
     address: keyOfSalvation.address,
-    constructorArguments: [1000],
+    // constructorArguments: [1000],
   });
 }
 

@@ -12,8 +12,12 @@ const guaranteedAddresses = [
     '0x2175cF248625c4cBefb204E76f0145b47d9061F8',
     // TEST 2
     '0xe253773Fdd10B4Bd9d7567e37003F7029144EF90',
+    // TEST 3,
+    '0x6FdCB216A701f6Beb805E6f4F3714cb1581cEb80',
     // MAGIC EDEN ACCOUNT,
-    '0x0B1e16A648e940165aE8cfeD0b90ed695607b01e'
+    '0x0B1e16A648e940165aE8cfeD0b90ed695607b01e',
+    // MAGIC EDEN ACCOUNT 2,
+    '0xEfac1d54678De7Da41ba90cb17d4446695858457'
 ];
 
 // for testing purposes, these addresses are the 5 - 8th in my metamask wallet
@@ -25,6 +29,8 @@ const oaAddresses = [
     '0xD85Fbb429D2e53B49E343A6b3E68f03295Ad73F4',
     // Account 11
     '0xb3bf8cd8Ba8BD013F4C318ED3C75C3f154a502fA',
+    // MAGIC EDEN ACCOUNT 2 (FROM GUARANTEED TO OA TEST)
+    '0xEfac1d54678De7Da41ba90cb17d4446695858457'
 ]
 
 // gets the leaf nodes of the guaranteed merkle tree

@@ -6,22 +6,17 @@ pragma solidity ^0.8.18;
 
 import '../nft-base/ERC721AExtended.sol';
 import '@openzeppelin/contracts/access/AccessControl.sol';
-import '@openzeppelin/contracts/access/Ownable.sol';
 import '@openzeppelin/contracts/interfaces/IERC2981.sol';
 import '@openzeppelin/contracts/token/common/ERC2981.sol';
 import '@openzeppelin/contracts/utils/cryptography/MerkleProof.sol';
-import 'operator-filter-registry/src/OperatorFilterer.sol';
-import '@openzeppelin/contracts/utils/Address.sol';
-import '@openzeppelin/contracts/utils/cryptography/ECDSA.sol';
+import 'operator-filter-registry/src/DefaultOperatorFilterer.sol';
 import '@openzeppelin/contracts/interfaces/IERC20.sol';
 
 /**
  * @dev Key of Salvation (aka Genesis Pass) contract.
  */
-contract KeyOfSalvation is ERC721AExtended, AccessControl, ERC2981, Ownable, OperatorFilterer {
-    using Address for address;
+contract KeyOfSalvation is ERC721AExtended, AccessControl, ERC2981, DefaultOperatorFilterer {
     using Strings for uint256;
-    using ECDSA for bytes32;
 
     /**
      * @dev errors
@@ -44,17 +39,9 @@ contract KeyOfSalvation is ERC721AExtended, AccessControl, ERC2981, Ownable, Ope
     error NotGuaranteedMint();
     // called when overallocated mint is not allowed
     error NotOverallocatedMint();
-    // called when guaranteed mint is already running
-    error GuaranteedMintAlready();
-    // called when overallocated mint is already running
-    error OverallocatedMintAlready();
-    // guaranteed mint must be off when overallocated is on.
-    error GuaranteedMintMustBeOff();
-    // overallocated mint must be off when guaranteed is on.
-    error OverAllocatedMintMustBeOff();
     // transferring ownership to zero address
     error TransferOwnershipToZeroAddress();
-    // when mint is already closed, cannot change mint status
+    // when mint is already closed
     error MintAlreadyClosed();
     // called when reveal stage is invalid
     error InvalidRevealStage();
@@ -63,15 +50,17 @@ contract KeyOfSalvation is ERC721AExtended, AccessControl, ERC2981, Ownable, Ope
      * @dev Key variables for the Key.
      */
     // max supply of the key
-    uint16 public constant MAX_SUPPLY = 5000;
+    uint16 public maxSupply = 5000;
     // max supply a dev can mint
-    uint16 public constant DEV_MINT_LIMIT = 500;
-    // check if an address has already minted (guaranteed or overallocated)
-    mapping (address => uint256) public whitelistMinted;
+    uint16 public devMintLimit = 500;
+    // // check if an address has already minted (guaranteed or overallocated)
+    // mapping (address => uint256) public whitelistMinted;
     // guaranteed mint timestamp
     uint256 public guaranteedMintTimestamp;
     // overallocated mint timestamp
     uint256 public overallocatedMintTimestamp;
+    // timestamp for when mint ends
+    uint256 public endMintTimestamp;
 
     // starts at STAGE_1.
     RevealStage public revealStage;
@@ -79,18 +68,31 @@ contract KeyOfSalvation is ERC721AExtended, AccessControl, ERC2981, Ownable, Ope
     enum RevealStage {
         // not revealed
         STAGE_1,
-        // revealed the key type and house
+        // revealed the second stage
         STAGE_2,
-        // revealed the luck trait
+        // revealed the final stage
         STAGE_3
     }
 
-    constructor(uint96 defaultRoyalty_) ERC721A('Key Of Salvation', 'KOS') OperatorFilterer(0x0000000000000000000000000000000000000000, false) {
+    constructor() ERC721A('Key Of Salvation', 'KOS') {
         _grantRole(DEFAULT_ADMIN_ROLE, _msgSender());
-        _setDefaultRoyalty(_msgSender(), defaultRoyalty_);
+        // sets the default royalty to 10%
+        _setDefaultRoyalty(_msgSender(), 1000);
         revealStage = RevealStage.STAGE_1;
-        guaranteedMintTimestamp = 1680536400;
-        overallocatedMintTimestamp = 1680537000;
+        // 7 April 2023 12:00 CET (can and most likely will be changed)
+        guaranteedMintTimestamp = 1680861600;
+        // 8 April 2023 00:15 CET (can and most likely will be changed)
+        overallocatedMintTimestamp = 1680905700;
+        // 9 April 2023 12:15 CET (can and most likely will be changed)
+        endMintTimestamp = 1680948900;
+    }
+
+    function changeMaxSupply(uint16 _maxSupply) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        maxSupply = _maxSupply;
+    }
+
+    function changeDevMintLimit(uint16 _devMintLimit) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        devMintLimit = _devMintLimit;
     }
 
     // changes the guaranteed mint timestamp.
@@ -101,6 +103,11 @@ contract KeyOfSalvation is ERC721AExtended, AccessControl, ERC2981, Ownable, Ope
     // changes the overallocated mint timestamp.
     function changeOverallocatedMintTimestamp(uint256 _timestamp) external onlyRole(DEFAULT_ADMIN_ROLE) {
         overallocatedMintTimestamp = _timestamp;
+    }
+
+    // changes the end mint timestamp.
+    function changeEndMintTimestamp(uint256 _timestamp) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        endMintTimestamp = _timestamp;
     }
 
     // changes start token from 0 to 1.
@@ -119,24 +126,33 @@ contract KeyOfSalvation is ERC721AExtended, AccessControl, ERC2981, Ownable, Ope
             revert NotGuaranteedMint();
         }
 
+        if (block.timestamp >= endMintTimestamp) {
+            revert MintAlreadyClosed();
+        }
+
         // checks if the address is whitelisted for guaranteed
         if (!_isWhitelisted(1, _msgSender(), _proof)) {
             revert NotWhitelistedForGuaranteed();
         }
 
         // checks if address has already minted
-        if (whitelistMinted[_msgSender()] > 0) {
+        if (_getAux(_msgSender()) > 0) {
             revert AlreadyMinted();
         }
 
-        whitelistMinted[_msgSender()] = nextTokenId();
-        _safeMint(false, _msgSender(), 1);
+        // sets the whitelist minted to 1
+        _setAux(_msgSender(), 1);
+        _safeMint(_msgSender(), 1);
     }
 
-    // mints a key to an overallocated WL holder.
+    // mints a key to an overallocated WL holder or a guaranteed WL holder if the guaranteed mint is over and they didn't get a chance to mint.
     function overallocatedMint(bytes32[] calldata _proof) external {
         if (block.timestamp < overallocatedMintTimestamp) {
             revert NotOverallocatedMint();
+        }
+
+        if (block.timestamp >= endMintTimestamp) {
+            revert MintAlreadyClosed();
         }
 
         // checks if the address is whitelisted for OA
@@ -145,30 +161,24 @@ contract KeyOfSalvation is ERC721AExtended, AccessControl, ERC2981, Ownable, Ope
         }
 
         // checks if address has already minted
-        if (whitelistMinted[_msgSender()] > 0) {
+        if (_getAux(_msgSender()) > 0) {
             revert AlreadyMinted();
         }
 
-        whitelistMinted[_msgSender()] = nextTokenId();
-        _safeMint(false, _msgSender(), 1);
+        // sets the whitelist minted to 1
+        _setAux(_msgSender(), 1);
+        _safeMint(_msgSender(), 1);
     }
 
     // mints _amount of keys to the dev (i.e. DEFAULT_ADMIN_ROLE).
     function devMint(uint16 _amount) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        _safeMint(true, _msgSender(), _amount);
+        _safeMint(_msgSender(), _amount);
     }
 
-    function _safeMint(bool _isDevMint, address _to, uint256 _amount) internal virtual {
+    function _safeMint(address _to, uint256 _amount) internal virtual override {
         // checks if current supply + _amount is greater than max supply
-        if (totalSupply() + _amount > MAX_SUPPLY) {
+        if (totalSupply() + _amount > maxSupply) {
             revert MaxSupplyReached();
-        }
-
-        if (_isDevMint) {
-            // checks if dev mint limit is reached
-            if (balanceOf(_msgSender()) + _amount > DEV_MINT_LIMIT) {
-                revert DevMintLimitReached();
-            }
         }
 
         ERC721A._safeMint(_to, _amount);
@@ -226,10 +236,10 @@ contract KeyOfSalvation is ERC721AExtended, AccessControl, ERC2981, Ownable, Ope
         string memory baseURI_ = _baseURI();
 
         if (revealStage == RevealStage.STAGE_1) {
-            return _stage1RevealURI;
+            return baseURI_;
+        } else {
+            return bytes(baseURI_).length > 0 ? string(abi.encodePacked(baseURI_, _tokenId.toString(), '.json')) : '';
         }
-
-        return bytes(baseURI_).length > 0 ? string(abi.encodePacked(baseURI_, _tokenId.toString(), '.json')) : '';
     }
 
     function _baseURI() internal view override returns (string memory) {
@@ -314,7 +324,7 @@ contract KeyOfSalvation is ERC721AExtended, AccessControl, ERC2981, Ownable, Ope
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721A, IERC721A, AccessControl, ERC2981) returns (bool) {
         return 
             interfaceId == type(IAccessControl).interfaceId ||
-            interfaceId == type(IERC721A).interfaceId ||
+            ERC721A.supportsInterface(interfaceId) ||
             interfaceId == type(IERC2981).interfaceId ||
             interfaceId == type(IERC165).interfaceId ||
             super.supportsInterface(interfaceId);

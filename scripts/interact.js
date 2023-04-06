@@ -1,14 +1,15 @@
 const { ethers, artifacts } = require('hardhat');
 const { MerkleTree } = require('merkletreejs');
 const keccak256 = require('keccak256');
-const { guaranteedMerkleTree } = require('../src/testWhitelisting');
+const { guaranteedMerkleTree, oaMerkleTree } = require('../src/testWhitelisting');
 const fs = require('fs');
 const path = require('path');
 
 const parseJSON = (data) => JSON.parse(JSON.stringify(data));
 
 async function main() {
-    const kosAddress = '0xa8a7a9f5997aa2cC555A7aE2654fA6522F350546';
+    // mumbai
+    const kosAddress = '0x7fB5e130611bB8AEEba35c482D405875C1cB0CF1';
     const KOSContract = await ethers.getContractFactory('KeyOfSalvation');
     const kos = await KOSContract.attach(kosAddress);
 
@@ -23,7 +24,8 @@ async function main() {
     );
 
     const kosContract = new ethers.Contract(
-      '0xa8a7a9f5997aa2cC555A7aE2654fA6522F350546',
+      // mumbai
+      '0x7fB5e130611bB8AEEba35c482D405875C1cB0CF1 ',
       abi,
       rpcURL,
     );
@@ -37,16 +39,31 @@ async function main() {
     // const devMint = await kos.devMint(1);
     // console.log('devMint: ', devMint);
 
-    // const changeGuaranteedTimestamp = await kos.changeGuaranteedMintTimestamp(1680537300);
+    // const changeGuaranteedTimestamp = await kos.changeGuaranteedMintTimestamp(1680703200);
     // console.log('changeGuaranteedTimestamp: ', changeGuaranteedTimestamp);
 
-    // const changeOverallocatedTimestamp = await kos.changeOverallocatedMintTimestamp(1680537900);
+    // const checkOverallocatedMerkleRoot = await kos.overallocatedMerkleRoot();
+    // console.log('checkOverallocatedMerkleRoot: ', checkOverallocatedMerkleRoot);
+
+    // const changeOverallocatedTimestamp = await kos.changeOverallocatedMintTimestamp(1680705000);
     // console.log('changeOverallocatedTimestamp: ', changeOverallocatedTimestamp);
 
-    const tryGuaranteedMint = await kos.guaranteedMint(
-      guaranteedMerkleTree.getHexProof(keccak256('0x2175cF248625c4cBefb204E76f0145b47d9061F8')),
-    );
-    console.log('tryGuaranteedMint: ', tryGuaranteedMint);
+    // const changeEndTimestamp = await kos.changeEndMintTimestamp(1680705600);
+    // console.log('changeEndTimestamp: ', changeEndTimestamp);
+
+    // const getEndTimestamp = await kos.endMintTimestamp();
+    // console.log('getEndTimestamp: ', getEndTimestamp);
+
+    // const tryGuaranteedMint = await kos.guaranteedMint(
+    //   guaranteedMerkleTree.getHexProof(keccak256('0x6FdCB216A701f6Beb805E6f4F3714cb1581cEb80')),
+    // );
+    // console.log('tryGuaranteedMint: ', tryGuaranteedMint);
+
+    // const tryOverallocatedMint = await kos.overallocatedMint(
+    //   oaMerkleTree.getHexProof(keccak256('0xD85fBB429D2e53B49E343A6b3E68f03295Ad73F4'))
+    // );
+
+    // console.log('tryOverallocatedMint: ', tryOverallocatedMint);
 
     // const trf = await kosContract.connect(deployer)['safeTransferFrom(address,address,uint256)'](deployer.address, '0x2175cF248625c4cBefb204E76f0145b47d9061F8', 1);
     // console.log('trf: ', trf);
@@ -54,18 +71,24 @@ async function main() {
     // const changeContractURI = await kos.setContractURI('https://silver-odd-bee-580.mypinata.cloud/ipfs/bafybeifr5nfj5sm25itd5mkxjsrgwcevy6rziw5ek6fhv5ov66cxadn5o4/kos.json');
     // console.log('changeContractURI: ', changeContractURI);
 
-    // const changeStage = await kosContract.connect(deployer)['setRevealStage(uint8)'](2);
+    // const changeStage = await kos.setRevealStage(0);
     // console.log('changeStage: ', changeStage);
 
-    // const setBaseURI = await kosContract.connect(deployer).setBaseURI(1, 'https://silver-odd-bee-580.mypinata.cloud/ipfs/bafybeiakr662765sqiqocsjdzlfffamvu2dgexq4rnss4zwdqohpyd276m/metadata.json');
-    // console.log('setBaseURI: ', setBaseURI);
+    // const setBaseURIToStage2 = await kosContract.connect(deployer).setBaseURI(2, 'https://silver-odd-bee-580.mypinata.cloud/ipfs/bafybeiaf4hvzrvy2t65fro7lxqwnkwvbxr35sadgynu2bpovbpaqmmht7q/');
+    // console.log('setBaseURI: ', setBaseURIToStage2);
+
+    const setBaseURI = await kos.setBaseURI(1, 'https://silver-odd-bee-580.mypinata.cloud/ipfs/bafybeidhgtjpp7pubdkh2m7mqjoonjary2tpo4jnmnw2kb3wquo4srtizu/metadata.json');
+    console.log('setBaseURI: ', setBaseURI);
+
+    // const checkBaseUri = await kos.baseURI();
+    // console.log('checkBaseUri: ', checkBaseUri);
 
     // // change guaranteed merkle tree root hash to the wl addresses in `testWhitelisting`
-    // const changeGuaranteedRoot = await kos.setMerkleRoot(1, '0xf4e63e77429fb1dd2f25b589799fd147ecca1a128d1e60b4d868d91289ffe427');
+    // const changeGuaranteedRoot = await kos.setMerkleRoot(1, '0x39cba08bb4f885e7ea70e47eb4108df0148d391c5c87527bb3a88fab2cf821a9');
     // console.log('changeGuaranteedRoot: ', changeGuaranteedRoot);
 
     // // change overallocated merkle tree root hash to the wl addresses in `testWhitelisting`
-    // const changeOverallocatedRoot = await kos.setMerkleRoot(2, '0x5f5e80c16033360f32e5575a5fef18781aa2639d5fe50f504452ec199eeaf414');
+    // const changeOverallocatedRoot = await kos.setMerkleRoot(2, '0x2c35ddf3ebb960989de718b2a92fded6be1e9614414ad50503fa19390970ee85');
     // console.log('changeOverallocatedRoot: ', changeOverallocatedRoot);
 }
 
