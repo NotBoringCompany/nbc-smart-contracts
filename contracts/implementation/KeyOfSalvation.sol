@@ -19,32 +19,79 @@ contract KeyOfSalvation is ERC721AExtended, AccessControl, ERC2981, DefaultOpera
     using Strings for uint256;
 
     /**
-     * @dev errors
+     * @dev modifiers for error checking
      */
-    // called when max supply is reached and minting is attempted
-    error MaxSupplyReached();
-    // called when dev mint limit is reached and minting is attempted (from the dev)
-    error DevMintLimitReached();
-    // called when royalty specified is zero
-    error RoyaltyIsZero();
-    // called when address specified is not whitelisted for guaranteed
-    error NotWhitelistedForGuaranteed();
-    // called when address specified is not whitelisted for overallocated
-    error NotWhitelistedForOverallocated();
-    // called when address specified has already minted
-    error AlreadyMinted();
-    // two merkle types: guaranteed and overallocated root
-    error InvalidMerkleType();
-    // called when guaranteed mint is not allowed
-    error NotGuaranteedMint();
-    // called when overallocated mint is not allowed
-    error NotOverallocatedMint();
-    // transferring ownership to zero address
-    error TransferOwnershipToZeroAddress();
-    // when mint is already closed
-    error MintAlreadyClosed();
-    // called when reveal stage is invalid
-    error InvalidRevealStage();
+    // checks if current supply + _amount is greater than max supply
+    modifier isBelowMaxSupply(uint256 _amount) {
+        require(totalSupply() + _amount <= maxSupply, 'KOS1');
+        _;
+    }
+
+     // checks if the address is whitelisted for guaranteed.
+    modifier whitelistedForGuaranteed(bytes32[] calldata _proof) {
+        require(_isWhitelisted(1, _msgSender(), _proof), 'KOS2');
+        _;
+    }
+
+    // checks if the address is whitelisted for overallocated.
+    modifier whitelistedForOverallocated(bytes32[] calldata _proof) {
+        require(_isWhitelisted(2, _msgSender(), _proof), 'KOS3');
+        _;
+    }
+
+    // checks if the address has not minted.
+    modifier hasNotMinted() {
+        require(_getAux(_msgSender()) == 0, 'KOS4');
+        _;
+    }
+
+    // checks if guaranteed mint is on
+    modifier isGuaranteedMint() {
+        require(block.timestamp >= guaranteedMintTimestamp, 'KOS5');
+        _;
+    }
+
+    // checks if overallocated mint is on
+    modifier isOverallocatedMint() {
+        require(block.timestamp >= overallocatedMintTimestamp, 'KOS6');
+        _;
+    }
+
+    // checks if mint is not over
+    modifier isNotEndOfMint() {
+        require(block.timestamp < endMintTimestamp, 'KOS7');
+        _;
+    }
+
+    // only owner modifier
+    modifier onlyOwner() {
+        require(_msgSender() == _owner, 'KOS8');
+        _;
+    }
+
+    // checks if _to is to an address that is not zero.
+    modifier transferToNonZeroAddress(address _to) {
+        require(_to != address(0), 'KOS9');
+        _;
+    }
+
+    // checks if the merkle type is valid
+    modifier isValidMerkleType(uint8 _type) {
+        require(_type == 1 || _type == 2, 'KOS10');
+        _;
+    }
+
+    // ensures that _tokenId exists
+    modifier uriQueryExists(uint256 _tokenId) {
+        require(_exists(_tokenId), 'KOS11');
+        _;
+    }
+
+        // ensures that reveal stage is valid
+    modifier validRevealStage(uint8 _type) {
+        require(_type == 1 || _type == 2 || _type == 3, 'KOS12');
+        _;
+    }
 
     /**
      * @dev Key variables for the Key.
@@ -61,6 +108,9 @@ contract KeyOfSalvation is ERC721AExtended, AccessControl, ERC2981, DefaultOpera
     uint256 public overallocatedMintTimestamp;
     // timestamp for when mint ends
     uint256 public endMintTimestamp;
+
+    // owner of the contract
+    address private _owner;
 
     // starts at STAGE_1.
     RevealStage public revealStage;
@@ -87,10 +137,22 @@ contract KeyOfSalvation is ERC721AExtended, AccessControl, ERC2981, DefaultOpera
         endMintTimestamp = 1680948900;
     }
 
+    // gets the owner of the contract.
+    function owner() public view returns (address) {
+        return _owner;
+    }
+
+    // changes the owner of the contract. only callable by the current owner.
+    function changeOwner(address _newOwner) external onlyOwner() transferToNonZeroAddress(_newOwner) {
+        _owner = _newOwner;
+    }
+
+    // changes the max supply of the contract.
     function changeMaxSupply(uint16 _maxSupply) external onlyRole(DEFAULT_ADMIN_ROLE) {
         maxSupply = _maxSupply;
     }
 
+    // changes the dev mint limit of the contract.
     function changeDevMintLimit(uint16 _devMintLimit) external onlyRole(DEFAULT_ADMIN_ROLE) {
         devMintLimit = _devMintLimit;
     }
@@ -121,52 +183,18 @@ contract KeyOfSalvation is ERC721AExtended, AccessControl, ERC2981, DefaultOpera
     }
 
     // mints a key to a guaranteed WL holder.
-    function guaranteedMint(bytes32[] calldata _proof) external {
-        if (block.timestamp < guaranteedMintTimestamp) {
-            revert NotGuaranteedMint();
-        }
-
-        if (block.timestamp >= endMintTimestamp) {
-            revert MintAlreadyClosed();
-        }
-
-        // checks if the address is whitelisted for guaranteed
-        if (!_isWhitelisted(1, _msgSender(), _proof)) {
-            revert NotWhitelistedForGuaranteed();
-        }
-
-        // checks if address has already minted
-        if (_getAux(_msgSender()) > 0) {
-            revert AlreadyMinted();
-        }
-
+    function guaranteedMint(bytes32[] calldata _proof) external whitelistedForGuaranteed(_proof) hasNotMinted() isGuaranteedMint() isNotEndOfMint() {
         // sets the whitelist minted to 1
         _setAux(_msgSender(), 1);
+        // mints the key
         _safeMint(_msgSender(), 1);
     }
 
     // mints a key to an overallocated WL holder or a guaranteed WL holder if the guaranteed mint is over and they didn't get a chance to mint.
-    function overallocatedMint(bytes32[] calldata _proof) external {
-        if (block.timestamp < overallocatedMintTimestamp) {
-            revert NotOverallocatedMint();
-        }
-
-        if (block.timestamp >= endMintTimestamp) {
-            revert MintAlreadyClosed();
-        }
-
-        // checks if the address is whitelisted for OA
-        if (!_isWhitelisted(2, _msgSender(), _proof)) {
-            revert NotWhitelistedForOverallocated();
-        }
-
-        // checks if address has already minted
-        if (_getAux(_msgSender()) > 0) {
-            revert AlreadyMinted();
-        }
-
+    function overallocatedMint(bytes32[] calldata _proof) external whitelistedForOverallocated(_proof) hasNotMinted() isOverallocatedMint() isNotEndOfMint() {
         // sets the whitelist minted to 1
         _setAux(_msgSender(), 1);
+        // mints the key
         _safeMint(_msgSender(), 1);
     }
 
@@ -175,12 +203,7 @@ contract KeyOfSalvation is ERC721AExtended, AccessControl, ERC2981, DefaultOpera
         _safeMint(_msgSender(), _amount);
     }
 
-    function _safeMint(address _to, uint256 _amount) internal virtual override {
-        // checks if current supply + _amount is greater than max supply
-        if (totalSupply() + _amount > maxSupply) {
-            revert MaxSupplyReached();
-        }
-
+    function _safeMint(address _to, uint256 _amount) internal virtual override isBelowMaxSupply(_amount) {
         ERC721A._safeMint(_to, _amount);
     }
 
@@ -191,13 +214,11 @@ contract KeyOfSalvation is ERC721AExtended, AccessControl, ERC2981, DefaultOpera
     bytes32 public overallocatedMerkleRoot;
 
     // sets the root of the tree
-    function setMerkleRoot(uint8 _type, bytes32 _merkleRoot) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function setMerkleRoot(uint8 _type, bytes32 _merkleRoot) external onlyRole(DEFAULT_ADMIN_ROLE) isValidMerkleType(_type) {
         if (_type == 1) {
             guaranteedMerkleRoot = _merkleRoot;
         } else if (_type == 2) {
             overallocatedMerkleRoot = _merkleRoot;
-        } else {
-            revert InvalidMerkleType();
         }
     }
 
@@ -212,14 +233,13 @@ contract KeyOfSalvation is ERC721AExtended, AccessControl, ERC2981, DefaultOpera
     }
 
     // verifies the provided _proof to check if they are guaranteed/overallocated/not whitelisted.
-    function _verify(uint8 _type, bytes32 _leaf, bytes32[] memory _proof) internal view returns (bool) {
+    function _verify(uint8 _type, bytes32 _leaf, bytes32[] memory _proof) internal view isValidMerkleType(_type) returns (bool) {
         if (_type == 1) {
             return MerkleProof.verify(_proof, guaranteedMerkleRoot, _leaf);
-        } else if (_type == 2) {
-            return MerkleProof.verify(_proof, overallocatedMerkleRoot, _leaf);
-        } else {
-            revert InvalidMerkleType();
         }
+        
+        // assumes type is 2, otherwise `isValidMerkleType` reverts it automatically.
+        return MerkleProof.verify(_proof, overallocatedMerkleRoot, _leaf);
     }
 
     /// TOKEN URI FUNCTIONS
@@ -228,11 +248,7 @@ contract KeyOfSalvation is ERC721AExtended, AccessControl, ERC2981, DefaultOpera
     string private _stage2RevealURI;
     string private _stage3RevealURI;
 
-    function tokenURI(uint256 _tokenId) public view virtual override(ERC721A, IERC721A) returns (string memory) {
-        if (!_exists(_tokenId)) {
-            revert URIQueryForNonexistentToken();
-        }
-
+    function tokenURI(uint256 _tokenId) public view virtual override(ERC721A, IERC721A) uriQueryExists(_tokenId) returns (string memory) {
         string memory baseURI_ = _baseURI();
 
         if (revealStage == RevealStage.STAGE_1) {
@@ -256,15 +272,13 @@ contract KeyOfSalvation is ERC721AExtended, AccessControl, ERC2981, DefaultOpera
         return _baseURI();
     }
 
-    function setBaseURI(uint8 _type, string memory _uri) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function setBaseURI(uint8 _type, string memory _uri) external onlyRole(DEFAULT_ADMIN_ROLE) validRevealStage(_type) {
         if (_type == 1) {
             _stage1RevealURI = _uri;
         } else if (_type == 2) {
             _stage2RevealURI = _uri;
         } else if (_type == 3) {
             _stage3RevealURI = _uri;
-        } else {
-            revert InvalidRevealStage();
         }
     }
 
