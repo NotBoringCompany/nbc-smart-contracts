@@ -30,7 +30,9 @@ const oaAddresses = [
     // Account 11
     '0xb3bf8cd8Ba8BD013F4C318ED3C75C3f154a502fA',
     // MAGIC EDEN ACCOUNT 2 (FROM GUARANTEED TO OA TEST)
-    '0xEfac1d54678De7Da41ba90cb17d4446695858457'
+    '0xEfac1d54678De7Da41ba90cb17d4446695858457',
+    // MAGIC EDEN ACCOUNT 3
+    '0xfaaF5D267adb442758548932CD9d9e90A28fB6ed',
 ]
 
 // gets the leaf nodes of the guaranteed merkle tree

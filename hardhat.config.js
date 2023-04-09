@@ -13,11 +13,19 @@ const test4Wallet = process.env.TEST_4_WALLET;
 module.exports = {
   defaultNetwork: 'bscTestnet',
   etherscan: {
-    // apiKey: process.env.ETHERSCAN_API_KEY,
+    apiKey: process.env.ETHERSCAN_API_KEY,
     // apiKey: process.env.BSCSCAN_API_KEY,
-    apiKey: process.env.POLYGONSCAN_API_KEY,
+    // apiKey: process.env.POLYGONSCAN_API_KEY,
   },
   networks: {
+    ethereum: {
+      url: `https://eth-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_ETH_API_KEY}`,
+      chainId: 1,
+      gasPrice: 40000000000,
+      accounts: [
+        `0x${deployerAccount}`
+      ]
+    },
     bscTestnet: {
       url: 'https://data-seed-prebsc-1-s1.binance.org:8545',
       chainId: 97,
@@ -35,9 +43,9 @@ module.exports = {
         // `0x${account2Wallet}`,
         // `0x${testWallet}`,
         // `0x${test2Wallet}`
-        // `0x${test3Wallet}`,
+        `0x${test3Wallet}`,
         // `0x${test4Wallet}`
-        `0x${deployerAccount}`
+        // `0x${deployerAccount}`
       ]
     },
     mumbai: {

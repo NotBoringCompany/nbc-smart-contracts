@@ -129,12 +129,14 @@ contract KeyOfSalvation is ERC721AExtended, AccessControl, ERC2981, DefaultOpera
         // sets the default royalty to 10%
         _setDefaultRoyalty(_msgSender(), 1000);
         revealStage = RevealStage.STAGE_1;
-        // 7 April 2023 12:00 CET (can and most likely will be changed)
-        guaranteedMintTimestamp = 1680861600;
-        // 8 April 2023 00:15 CET (can and most likely will be changed)
-        overallocatedMintTimestamp = 1680905700;
-        // 9 April 2023 12:15 CET (can and most likely will be changed)
-        endMintTimestamp = 1680948900;
+        // 7 April 2023 09:00 EST
+        guaranteedMintTimestamp = 1680872400;
+        // 7 April 2023 18:30 EST
+        overallocatedMintTimestamp = 1680906600;
+        // 7 April 2023 23:59 EST
+        endMintTimestamp = 1680926340;
+        // sets the owner to the deployer
+        _owner = _msgSender();
     }
 
     // gets the owner of the contract.
