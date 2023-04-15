@@ -8,13 +8,18 @@ const path = require('path');
 const parseJSON = (data) => JSON.parse(JSON.stringify(data));
 
 async function main() {
-    const kosAddress = '0x7593af870c6c964363D8D4a7c6bb0B91623575c6';
+    const kosAddress = '0xa8a7a9f5997aa2cC555A7aE2654fA6522F350546';
     const KOSContract = await ethers.getContractFactory('KeyOfSalvation');
     const kos = await KOSContract.attach(kosAddress);
 
-    const [deployer] = await ethers.getSigners();
+    // const keychainAddress = '0xa61CDbbBC9907e417472c680804f854C0eBD5144';
+    // const keychainContract = await ethers.getContractFactory('Keychain');
+    // const keychain = await keychainContract.attach(keychainAddress);
+
+    // const [deployer] = await ethers.getSigners();
 
     const rpcURL = new ethers.providers.JsonRpcProvider(`https://polygon-mumbai.g.alchemy.com/v2/${process.env.ALCHEMY_MUMBAI_API_KEY}`);
+    // const rpcURL = new ethers.providers.JsonRpcProvider(`https://eth-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_SEPOLIA_API_KEY}`)
 
     const abi = JSON.parse(
       fs.readFileSync(
@@ -22,11 +27,46 @@ async function main() {
       )
     );
 
-    const kosContract = new ethers.Contract(
-      '0x7593af870c6c964363D8D4a7c6bb0B91623575c6',
-      abi,
-      rpcURL,
+    const keychainAbi = JSON.parse(
+      fs.readFileSync(
+        path.join(__dirname, '../src/keychainABI.json'),
+      )
     );
+
+    // const kosContract = new ethers.Contract(
+    //   '0x7593af870c6c964363D8D4a7c6bb0B91623575c6',
+    //   abi,
+    //   rpcURL,
+    // );
+
+    // const keychainContract = new ethers.Contract(
+    //   '0x071786f505589766e0E1654EdDCF576b6F484B7C',
+    //   keychainAbi,
+    //   rpcURL,
+    // )
+
+    /// KEYCHAIN STUFF
+    // const mintDev = await keychain.devMintExt(['0x0aa260f4311074cb064b8f871efe444cc53c8483'], [5]);
+    // console.log('mintDev: ', mintDev);
+
+    // const setBaseURI = await keychain.setBaseURI('https://silver-odd-bee-580.mypinata.cloud/ipfs/bafybeial4ykkuecivqclh5kxplh6nwecdfn3rs5zwazk665lqv32cp6eje/keychain.json');
+    // console.log('setBaseURI: ', setBaseURI);
+
+    // const singleBatchTrfTest = await keychain.singleBatchTrf('0x8FbFE537A211d81F90774EE7002ff784E352024a', [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+    // console.log('singleBatchTrfTest: ', singleBatchTrfTest);
+
+    // const encodeTokenIds = ethers.utils.defaultAbiCoder.encode(['uint16[]'], [[11, 12, 13]]);
+
+    // const multiBatchTrfTest = await keychain.multiBatchTrf(
+    //   [
+    //     '0x2175cF248625c4cBefb204E76f0145b47d9061F8',
+    //     '0x460107fAB29D57a6926DddC603B7331F4D3bCA05',
+    //     '0x8FbFE537A211d81F90774EE7002ff784E352024a'
+    //   ],
+    //   encodeTokenIds
+    // )
+
+    // console.log('multiBatchTrfTest: ', multiBatchTrfTest);
 
     // const allowGuaranteedMint = await kos.setMintStatus(1);
     // console.log('allowGuaranteedMint: ', allowGuaranteedMint);
@@ -69,10 +109,22 @@ async function main() {
     // const changeContractURI = await kos.setContractURI('https://silver-odd-bee-580.mypinata.cloud/ipfs/bafybeicwys5fdypz25jcxyty7vzcttnpjk3spgymsd7ysvmtfjjdyjyzau/contract.json');
     // console.log('changeContractURI: ', changeContractURI);
 
-    // const changeStage = await kos.setRevealStage(0);
+    // const changeStage = await kos.setRevealStage(1);
     // console.log('changeStage: ', changeStage);
 
-    // const setBaseURIToStage2 = await kosContract.connect(deployer).setBaseURI(2, 'https://silver-odd-bee-580.mypinata.cloud/ipfs/bafybeiaf4hvzrvy2t65fro7lxqwnkwvbxr35sadgynu2bpovbpaqmmht7q/');
+    // const increaseDevmint = await kos.changeDevMintLimit(5000);
+    // console.log('increaseDevmint: ', increaseDevmint);
+
+    // const devMint = await kos.devMint(4999);
+    // console.log('devMint: ', devMint);
+
+    const setRvlStage = await kos.setRevealStage(2);
+    console.log('setRvlStage: ', setRvlStage);
+
+    const baseURIChange = await kos.setBaseURI(3, 'https://silver-odd-bee-580.mypinata.cloud/ipfs/bafybeie4eh6kgysfskhlnvjtw63vgfnrviwd4webbfvvouda646ke5fx7m/');
+    console.log('baseURIChange: ', baseURIChange);
+
+    // const setBaseURIToStage2 = await kos.setBaseURI(2, 'https://silver-odd-bee-580.mypinata.cloud/ipfs/bafybeihbyjxt6xgc6ubeigxfwmpqwqkokg2robwbcfxilkwhlmym6hvhbi/');
     // console.log('setBaseURI: ', setBaseURIToStage2);
 
     // const setBaseURI = await kos.setBaseURI(1, 'https://silver-odd-bee-580.mypinata.cloud/ipfs/bafybeidhgtjpp7pubdkh2m7mqjoonjary2tpo4jnmnw2kb3wquo4srtizu/metadata.json');

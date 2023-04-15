@@ -2,8 +2,6 @@
 
 pragma solidity ^0.8.18;
 
-// import '../nft-base/NFTExtendedA.sol';
-
 import '../nft-base/ERC721AExtended.sol';
 import '@openzeppelin/contracts/access/AccessControl.sol';
 import '@openzeppelin/contracts/interfaces/IERC2981.sol';

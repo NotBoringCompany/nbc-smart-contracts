@@ -1,6 +1,7 @@
 {
     "name": "Key Of Salvation #1",
-    "image": "https://silver-odd-bee-580.mypinata.cloud/ipfs/bafybeia6u5vgo72qaxps2yxxidjjuzwcxecplviszxvcm76ol6vdw5gima/heree.png",
+    "image": "https://realmhunter-kos.fra1.digitaloceanspaces.com/revealStage1/chaos/gifs/Glory_Bronze_P_S_Diamond_02.gif",
+    "animation_url": "https://realmhunter-kos.fra1.digitaloceanspaces.com/revealStage1/chaos/mp4/Glory_Bronze_P_S_Diamond_02.mp4",
     "attributes": [
       {
         "trait_type": "House",
@@ -8,8 +9,8 @@
       },
       {
         "display_type": "boost_number",
-        "trait_type": "Luck",
+        "trait_type": "Luck Boost",
         "value": 55
       }
     ]
-  }
+}

@@ -8,19 +8,36 @@ async function main() {
   console.log('Account balance: ', (balance / 10 ** 18).toString());
 
   // Key Of Salvation contract
-  const KeyOfSalvation = await ethers.getContractFactory('KeyOfSalvation');
-  const keyOfSalvation = await KeyOfSalvation.deploy();
+  // const KeyOfSalvation = await ethers.getContractFactory('KeyOfSalvation');
+  // const keyOfSalvation = await KeyOfSalvation.deploy();
 
-  await keyOfSalvation.deployed();
-  console.log('KeyOfSalvation address: ', keyOfSalvation.address);
+  // await keyOfSalvation.deployed();
+  // console.log('KeyOfSalvation address: ', keyOfSalvation.address);
+
+  // const WAIT_BLOCK_CONFIRMATIONS = 6;
+  // await keyOfSalvation.deployTransaction.wait(WAIT_BLOCK_CONFIRMATIONS);
+
+  // Keychain contract
+  // const Keychain = await ethers.getContractFactory('Keychain');
+  // const keychain = await Keychain.deploy();
+
+  // await keychain.deployed();
+  // console.log('Keychain address: ', keychain.address);
+
+  // const WAIT_BLOCK_CONFIRMATIONS = 6;
+  // await keychain.deployTransaction.wait(WAIT_BLOCK_CONFIRMATIONS);
+
+  // Superior Keychain contract
+  const SuperiorKeychain = await ethers.getContractFactory('SuperiorKeychain');
+  const superiorKeychain = await SuperiorKeychain.deploy();
 
   const WAIT_BLOCK_CONFIRMATIONS = 6;
-  await keyOfSalvation.deployTransaction.wait(WAIT_BLOCK_CONFIRMATIONS);
+  await superiorKeychain.deployTransaction.wait(WAIT_BLOCK_CONFIRMATIONS);
 
-  console.log('Verifying KeyOfSalvation contract...');
+  console.log('Verifying contract...');
 
   await run(`verify:verify`, {
-    address: keyOfSalvation.address,
+    address: superiorKeychain.address,
     // constructorArguments: [1000],
   });
 }

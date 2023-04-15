@@ -21,7 +21,7 @@ module.exports = {
     ethereum: {
       url: `https://eth-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_ETH_API_KEY}`,
       chainId: 1,
-      gasPrice: 40000000000,
+      gasPrice: 32000000000,
       accounts: [
         `0x${deployerAccount}`
       ]
@@ -72,9 +72,9 @@ module.exports = {
       ]
     },
     sepolia: {
-      url: `https://sepolia.infura.io/v3/${process.env.INFURA_API_KEY}`,
+      url: `https://eth-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_SEPOLIA_API_KEY}`,
       chainId: 11155111,
-      gasPrice: 20000000000,
+      gasPrice: 29000000000,
       accounts: [
         // `0x${account2Wallet}`, 
         `0x${deployerAccount}`
