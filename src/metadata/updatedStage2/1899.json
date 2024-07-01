@@ -1,0 +1,44 @@
+{
+  "name": "Wonder Key #1899",
+  "image": "https://realmhunter-kos.fra1.cdn.digitaloceanspaces.com/revealStage2/gif/Silver-Glory-P%20T-Triangle-2-Nature-Lightning.gif",
+  "animation_url": "https://realmhunter-kos.fra1.cdn.digitaloceanspaces.com/revealStage2/mp4/Silver-Glory-P%20T-Triangle-2-Nature-Lightning.mp4",
+  "attributes": [
+    {
+      "trait_type": "Luck",
+      "value": 70
+    },
+    {
+      "display_type": "boost_percentage",
+      "trait_type": "Luck Boost",
+      "value": 20
+    },
+    {
+      "trait_type": "Coating",
+      "value": "Silver"
+    },
+    {
+      "trait_type": "House",
+      "value": "Glory"
+    },
+    {
+      "trait_type": "Pillar",
+      "value": "Pillar of Destiny"
+    },
+    {
+      "trait_type": "Podium",
+      "value": "Timeless Triune"
+    },
+    {
+      "trait_type": "Podium Count",
+      "value": 2
+    },
+    {
+      "trait_type": "Type",
+      "value": "Nature"
+    },
+    {
+      "trait_type": "Aura",
+      "value": "Lightning"
+    }
+  ]
+}

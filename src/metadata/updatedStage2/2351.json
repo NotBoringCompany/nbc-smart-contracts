@@ -1,0 +1,44 @@
+{
+  "name": "Wonder Key #2351",
+  "image": "https://realmhunter-kos.fra1.cdn.digitaloceanspaces.com/revealStage2/gif/Silver-Chaos-P%20S-Diamond-1-Water-Snow.gif",
+  "animation_url": "https://realmhunter-kos.fra1.cdn.digitaloceanspaces.com/revealStage2/mp4/Silver-Chaos-P%20S-Diamond-1-Water-Snow.mp4",
+  "attributes": [
+    {
+      "trait_type": "Luck",
+      "value": 60
+    },
+    {
+      "display_type": "boost_percentage",
+      "trait_type": "Luck Boost",
+      "value": 5
+    },
+    {
+      "trait_type": "Coating",
+      "value": "Silver"
+    },
+    {
+      "trait_type": "House",
+      "value": "Chaos"
+    },
+    {
+      "trait_type": "Pillar",
+      "value": "Pillar of Eternity"
+    },
+    {
+      "trait_type": "Podium",
+      "value": "Primordial Prism"
+    },
+    {
+      "trait_type": "Podium Count",
+      "value": 1
+    },
+    {
+      "trait_type": "Type",
+      "value": "Water"
+    },
+    {
+      "trait_type": "Aura",
+      "value": "Snow"
+    }
+  ]
+}

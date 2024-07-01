@@ -1,0 +1,44 @@
+{
+  "name": "Wonder Key #1245",
+  "image": "https://realmhunter-kos.fra1.cdn.digitaloceanspaces.com/revealStage2/gif/Bronze-Tradition-P%20T-Triangle-1-Frost-Smoke.gif",
+  "animation_url": "https://realmhunter-kos.fra1.cdn.digitaloceanspaces.com/revealStage2/mp4/Bronze-Tradition-P%20T-Triangle-1-Frost-Smoke.mp4",
+  "attributes": [
+    {
+      "trait_type": "Luck",
+      "value": 47
+    },
+    {
+      "display_type": "boost_percentage",
+      "trait_type": "Luck Boost",
+      "value": 20
+    },
+    {
+      "trait_type": "Coating",
+      "value": "Bronze"
+    },
+    {
+      "trait_type": "House",
+      "value": "Tradition"
+    },
+    {
+      "trait_type": "Pillar",
+      "value": "Pillar of Destiny"
+    },
+    {
+      "trait_type": "Podium",
+      "value": "Timeless Triune"
+    },
+    {
+      "trait_type": "Podium Count",
+      "value": 1
+    },
+    {
+      "trait_type": "Type",
+      "value": "Frost"
+    },
+    {
+      "trait_type": "Aura",
+      "value": "Smoke"
+    }
+  ]
+}

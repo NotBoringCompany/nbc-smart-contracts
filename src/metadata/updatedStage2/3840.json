@@ -1,0 +1,44 @@
+{
+  "name": "Wonder Key #3840",
+  "image": "https://realmhunter-kos.fra1.cdn.digitaloceanspaces.com/revealStage2/gif/Bronze-Glory-P%20T-Diamond-2-Toxic-Smoke.gif",
+  "animation_url": "https://realmhunter-kos.fra1.cdn.digitaloceanspaces.com/revealStage2/mp4/Bronze-Glory-P%20T-Diamond-2-Toxic-Smoke.mp4",
+  "attributes": [
+    {
+      "trait_type": "Luck",
+      "value": 36
+    },
+    {
+      "display_type": "boost_percentage",
+      "trait_type": "Luck Boost",
+      "value": 20
+    },
+    {
+      "trait_type": "Coating",
+      "value": "Bronze"
+    },
+    {
+      "trait_type": "House",
+      "value": "Glory"
+    },
+    {
+      "trait_type": "Pillar",
+      "value": "Pillar of Destiny"
+    },
+    {
+      "trait_type": "Podium",
+      "value": "Primordial Prism"
+    },
+    {
+      "trait_type": "Podium Count",
+      "value": 2
+    },
+    {
+      "trait_type": "Type",
+      "value": "Toxic"
+    },
+    {
+      "trait_type": "Aura",
+      "value": "Smoke"
+    }
+  ]
+}

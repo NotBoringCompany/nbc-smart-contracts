@@ -1,0 +1,44 @@
+{
+  "name": "Wonder Key #2778",
+  "image": "https://realmhunter-kos.fra1.cdn.digitaloceanspaces.com/revealStage2/gif/Bronze-Tradition-P%20S-Triangle-1-Fire-Lightning.gif",
+  "animation_url": "https://realmhunter-kos.fra1.cdn.digitaloceanspaces.com/revealStage2/mp4/Bronze-Tradition-P%20S-Triangle-1-Fire-Lightning.mp4",
+  "attributes": [
+    {
+      "trait_type": "Luck",
+      "value": 7
+    },
+    {
+      "display_type": "boost_percentage",
+      "trait_type": "Luck Boost",
+      "value": 5
+    },
+    {
+      "trait_type": "Coating",
+      "value": "Bronze"
+    },
+    {
+      "trait_type": "House",
+      "value": "Tradition"
+    },
+    {
+      "trait_type": "Pillar",
+      "value": "Pillar of Eternity"
+    },
+    {
+      "trait_type": "Podium",
+      "value": "Timeless Triune"
+    },
+    {
+      "trait_type": "Podium Count",
+      "value": 1
+    },
+    {
+      "trait_type": "Type",
+      "value": "Fire"
+    },
+    {
+      "trait_type": "Aura",
+      "value": "Lightning"
+    }
+  ]
+}

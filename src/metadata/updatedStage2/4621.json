@@ -1,0 +1,44 @@
+{
+  "name": "Wonder Key #4621",
+  "image": "https://realmhunter-kos.fra1.cdn.digitaloceanspaces.com/revealStage2/gif/Bronze-Tradition-P%20S-Triangle-3-Toxic-Lightning.gif",
+  "animation_url": "https://realmhunter-kos.fra1.cdn.digitaloceanspaces.com/revealStage2/mp4/Bronze-Tradition-P%20S-Triangle-3-Toxic-Lightning.mp4",
+  "attributes": [
+    {
+      "trait_type": "Luck",
+      "value": 32
+    },
+    {
+      "display_type": "boost_percentage",
+      "trait_type": "Luck Boost",
+      "value": 20
+    },
+    {
+      "trait_type": "Coating",
+      "value": "Bronze"
+    },
+    {
+      "trait_type": "House",
+      "value": "Tradition"
+    },
+    {
+      "trait_type": "Pillar",
+      "value": "Pillar of Eternity"
+    },
+    {
+      "trait_type": "Podium",
+      "value": "Timeless Triune"
+    },
+    {
+      "trait_type": "Podium Count",
+      "value": 3
+    },
+    {
+      "trait_type": "Type",
+      "value": "Toxic"
+    },
+    {
+      "trait_type": "Aura",
+      "value": "Lightning"
+    }
+  ]
+}

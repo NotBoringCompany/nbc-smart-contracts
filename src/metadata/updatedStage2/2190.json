@@ -1,0 +1,44 @@
+{
+  "name": "Wonder Key #2190",
+  "image": "https://realmhunter-kos.fra1.cdn.digitaloceanspaces.com/revealStage2/gif/Silver-Tradition-P%20T-Diamond-2-Reptile-Snow.gif",
+  "animation_url": "https://realmhunter-kos.fra1.cdn.digitaloceanspaces.com/revealStage2/mp4/Silver-Tradition-P%20T-Diamond-2-Reptile-Snow.mp4",
+  "attributes": [
+    {
+      "trait_type": "Luck",
+      "value": 61
+    },
+    {
+      "display_type": "boost_percentage",
+      "trait_type": "Luck Boost",
+      "value": 20
+    },
+    {
+      "trait_type": "Coating",
+      "value": "Silver"
+    },
+    {
+      "trait_type": "House",
+      "value": "Tradition"
+    },
+    {
+      "trait_type": "Pillar",
+      "value": "Pillar of Destiny"
+    },
+    {
+      "trait_type": "Podium",
+      "value": "Primordial Prism"
+    },
+    {
+      "trait_type": "Podium Count",
+      "value": 2
+    },
+    {
+      "trait_type": "Type",
+      "value": "Reptile"
+    },
+    {
+      "trait_type": "Aura",
+      "value": "Snow"
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 {
-    "name": "Realm Hunter: Key Of Salvation",
-    "description": "5,000 Keys Of Salvation. Get ahead and partake in the Realm Hunter ecosystem with the exclusive Key Of Salvation, granting you early access to the mainline game and coveted collectibles within the ecosystem.",
-    "seller_fee_basis_points": 1000,
+    "name": "PlayWonderverse: Wonder Keys",
+    "description": "Unlock your adventure with 5,000 Wonder Keys! Secure your place in the Wonderverse ecosystem. Enjoy early special benefits and collect exclusive, coveted items within our immersive world, home to 150 million creature collector fans worldwide.",
+    "seller_fee_basis_points": 500,
     "fee_recipient": "0x0aA260F4311074cb064B8F871eFE444Cc53c8483"
 }

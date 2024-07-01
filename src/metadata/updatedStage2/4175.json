@@ -1,0 +1,44 @@
+{
+  "name": "Wonder Key #4175",
+  "image": "https://realmhunter-kos.fra1.cdn.digitaloceanspaces.com/revealStage2/gif/Ghost-P_S-Diamond-2.gif",
+  "animation_url": "https://realmhunter-kos.fra1.cdn.digitaloceanspaces.com/revealStage2/mp4/Ghost-P_S-Diamond-2.mp4",
+  "attributes": [
+    {
+      "trait_type": "Luck",
+      "value": 0
+    },
+    {
+      "display_type": "boost_percentage",
+      "trait_type": "Luck Boost",
+      "value": 20
+    },
+    {
+      "trait_type": "Coating",
+      "value": "Ghost"
+    },
+    {
+      "trait_type": "House",
+      "value": "Glory"
+    },
+    {
+      "trait_type": "Pillar",
+      "value": "Pillar of Eternity"
+    },
+    {
+      "trait_type": "Podium",
+      "value": "Primordial Prism"
+    },
+    {
+      "trait_type": "Podium Count",
+      "value": 2
+    },
+    {
+      "trait_type": "Type",
+      "value": "Brawler"
+    },
+    {
+      "trait_type": "Aura",
+      "value": "Lightning"
+    }
+  ]
+}

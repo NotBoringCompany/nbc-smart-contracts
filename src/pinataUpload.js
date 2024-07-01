@@ -12,7 +12,7 @@ const pinata = new pinataSDK(process.env.PINATA_API_KEY, process.env.PINATA_API_
 pinata.testAuthentication().then((res) => console.log(res));
 
 const pin = async () => {
-    const src = 'src/metadata/revealStage2UpdatedV2';
+    const src = 'src/metadata/kosContract';
     const options = {
         pinataOptions: {
             cidVersion: 1,
@@ -27,4 +27,4 @@ const pin = async () => {
     })
 }
 
-pin();
+// pin();

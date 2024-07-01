@@ -1,0 +1,44 @@
+{
+  "name": "Wonder Key #3170",
+  "image": "https://realmhunter-kos.fra1.cdn.digitaloceanspaces.com/revealStage2/gif/Gold-Chaos-P%20T-Triangle-2-Earth-Smoke.gif",
+  "animation_url": "https://realmhunter-kos.fra1.cdn.digitaloceanspaces.com/revealStage2/mp4/Gold-Chaos-P%20T-Triangle-2-Earth-Smoke.mp4",
+  "attributes": [
+    {
+      "trait_type": "Luck",
+      "value": 95
+    },
+    {
+      "display_type": "boost_percentage",
+      "trait_type": "Luck Boost",
+      "value": 5
+    },
+    {
+      "trait_type": "Coating",
+      "value": "Gold"
+    },
+    {
+      "trait_type": "House",
+      "value": "Chaos"
+    },
+    {
+      "trait_type": "Pillar",
+      "value": "Pillar of Destiny"
+    },
+    {
+      "trait_type": "Podium",
+      "value": "Timeless Triune"
+    },
+    {
+      "trait_type": "Podium Count",
+      "value": 2
+    },
+    {
+      "trait_type": "Type",
+      "value": "Earth"
+    },
+    {
+      "trait_type": "Aura",
+      "value": "Smoke"
+    }
+  ]
+}

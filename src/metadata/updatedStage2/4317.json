@@ -1,0 +1,44 @@
+{
+  "name": "Wonder Key #4317",
+  "image": "https://realmhunter-kos.fra1.cdn.digitaloceanspaces.com/revealStage2/gif/Angel-P_T-Triangle_1.gif",
+  "animation_url": "https://realmhunter-kos.fra1.cdn.digitaloceanspaces.com/revealStage2/mp4/Angel-P_T-Triangle_1.mp4",
+  "attributes": [
+    {
+      "trait_type": "Luck",
+      "value": 100
+    },
+    {
+      "display_type": "boost_percentage",
+      "trait_type": "Luck Boost",
+      "value": 5
+    },
+    {
+      "trait_type": "Coating",
+      "value": "Angel"
+    },
+    {
+      "trait_type": "House",
+      "value": "Tradition"
+    },
+    {
+      "trait_type": "Pillar",
+      "value": "Pillar of Destiny"
+    },
+    {
+      "trait_type": "Podium",
+      "value": "Timeless Triune"
+    },
+    {
+      "trait_type": "Podium Count",
+      "value": 1
+    },
+    {
+      "trait_type": "Type",
+      "value": "Ordinary"
+    },
+    {
+      "trait_type": "Aura",
+      "value": "Lightning"
+    }
+  ]
+}
